@@ -17,3 +17,11 @@ There are 2 main ways of creating unstable nodes:
 1. Creating an unstable verison of an existing non-unstable node using `unstable_nodes(nodename)`
 2. Using `unstablenodes.register_node(nodename, nodedef)` instead of `minetest.register_nod(nodename, nodedef)` to register a new node
 	* The definition can also include a `fallspeed` parameter to determine the falling speed of the node - a positive integer.
+
+## License
+
+(C) 2017 Tai "DuCake" Kedzierski
+
+Provided under the terms of the [GNU Lesser General Public License v3.0 (https://www.gnu.org/licenses/lgpl-3.0.html)](https://www.gnu.org/licenses/lgpl-3.0.html)
+
+You are free to copy, modify and redistribute this software, as long as yu provide the same rights to the receippients of your changed copies.
