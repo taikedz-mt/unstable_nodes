@@ -103,25 +103,7 @@ minetest.register_on_punchnode(function(pos, node, puncher, pointed_thing)
 	end
 end)
 
-function unstablenodes.define_unstable_node(nodename, fallspeed)
-	local tileset = minetest.registered_nodes[nodename].tiles
-	if type(tileset) == "string" then
-		tileset = {tileset}
-	end
-	local newtileset = {}
-
-	for k,v in pairs(tileset) do
-		if type(v) == "table" then
-			newtileset[k] = v.name
-		else
-			newtileset[k] = v
-		end
-	end
-
-	minetest.debug(dump(newtileset))
-	while #newtileset < 6 do
-		newtileset[#newtileset+1] = newtileset[#newtileset]
-	end
+local function define_unstable_node_entity(nodename, fallspeed)
 
 	local def = {
 		name = nodename,
@@ -140,19 +122,40 @@ function unstablenodes.define_unstable_node(nodename, fallspeed)
 end
 
 function unstablenodes.add_unstable_version(nodename)
-	local newdirtdef = {}
+	local newdef = {}
 	local newnodename = "unstablenodes:"..nodename:gsub(":","_")
 	local oldnodedef = minetest.registered_nodes[nodename]
 	if oldnodedef then
-		for k,v in pairs(oldnodedef) do
-			newdirtdef[k] = v
+
+		local tileset = oldnodedef.tiles
+		if type(tileset) == "string" then
+			tileset = {tileset}
 		end
-		newdirtdef.groups.unstable = 1
-		newdirtdef.description = "Unstable "..newdirtdef.description
+		local newtileset = {}
+
+		for k,v in pairs(tileset) do
+			if type(v) == "table" then
+				newtileset[k] = v.name
+			else
+				newtileset[k] = v
+			end
+		end
+
+		while #newtileset < 6 do
+			newtileset[#newtileset+1] = newtileset[#newtileset]
+		end
+
+		for k,v in pairs(oldnodedef) do
+			newdef[k] = v
+		
+		end
+		newdef.textures = newtileset
+		newdef.groups.unstable = 1
+		newdef.description = "Unstable "..newdef.description
 
 
-		minetest.register_node(newnodename,newdirtdef)
-		unstablenodes.define_unstable_node(newnodename)
+		minetest.register_node(newnodename, newdef)
+		unstablenodes.define_unstable_node_entity(newnodename)
 
 		minetest.register_craft({
 			output = newnodename,
@@ -164,6 +167,14 @@ function unstablenodes.add_unstable_version(nodename)
 	end
 end
 
-unstablenodes.add_unstable_version("default:cobble")
-unstablenodes.add_unstable_version("default:dirt_with_grass")
-minetest.register_alias("unstablenodes:unstable_dirt","unstablenodes:default_dirt_with_grass")
+function unstablenodes.register_node(nodename, def)
+	if not def.groups then
+		def.groups = {}
+	end
+	def.groups.unstable = 1
+
+	minetest.register_node(nodename, def)
+	unstablenodes.define_unstable_node_entity(nodename)
+end
+
+dofile( minetest.get_modpath("unstablenodes".."/addod_nodes.lua") )
