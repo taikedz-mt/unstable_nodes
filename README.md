@@ -14,8 +14,8 @@ You can however edit the examples in `nodes.lua` to add any nodes for which you 
 
 There are 2 main ways of creating unstable nodes:
 
-1. Creating an unstable verison of an existing non-unstable node using `unstable_nodes(nodename)`
-2. Using `unstablenodes.register_node(nodename, nodedef)` instead of `minetest.register_nod(nodename, nodedef)` to register a new node
+1. Creating an unstable verison of an existing non-unstable node using `unstable_nodes.add_unstable_version(nodename)`
+2. Using `unstablenodes.register_node(nodename, nodedef)` instead of `minetest.register_node(nodename, nodedef)` to register a new node
 	* The definition can also include a `fallspeed` parameter to determine the falling speed of the node - a positive integer.
 
 ## License
