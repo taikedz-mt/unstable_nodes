@@ -16,6 +16,8 @@ end
 
 local function monitor_fall(obj)
 	minetest.after(0.2, function()
+		if not obj then return end
+
 		if math.abs(obj:getvelocity().y) > 0 then
 			monitor_fall(obj)
 		else
