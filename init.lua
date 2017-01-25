@@ -160,6 +160,4 @@ function unstablenodes.add_unstable_version(nodename)
 	end
 end
 
-unstablenodes.add_unstable_version("default:cobble")
-unstablenodes.add_unstable_version("default:dirt_with_grass")
-minetest.register_alias("unstablenodes:unstable_dirt","unstablenodes:default_dirt_with_grass")
+dofile(minetest.get_modpath("unstablenodes").."/nodes.lua")
