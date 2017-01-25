@@ -177,4 +177,4 @@ function unstablenodes.register_node(nodename, def)
 	unstablenodes.define_unstable_node_entity(nodename)
 end
 
-dofile( minetest.get_modpath("unstablenodes".."/addod_nodes.lua") )
+dofile( minetest.get_modpath("unstablenodes").."/added_nodes.lua")
