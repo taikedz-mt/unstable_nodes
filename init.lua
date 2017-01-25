@@ -1,12 +1,11 @@
 unstablenodes = {}
 
 local unstabledepth = 2
-local unstablerange = 2
+local unstablerange = 3
 local falldelay = 0.2
 
 local function is_unstable(nodename)
 
-	minetest.debug("Checking "..nodename )
 	return (minetest.get_item_group(nodename, "unstable") > 0)
 end
 
@@ -14,20 +13,6 @@ local function can_fall_through(nodename)
 	return minetest.registered_nodes[nodename].buildtable_to or nodename == "air"
 end
 
-local function monitor_fall(obj)
-	minetest.after(0.2, function()
-		if not obj then return end
-
-		if math.abs(obj:getvelocity().y) > 0 then
-			monitor_fall(obj)
-		else
-			local nodename = obj:get_luaentity().name
-			local pos = obj:getpos()
-			obj:remove()
-			minetest.set_node(pos, {name=nodename})
-		end
-	end)
-end
 
 local function add_unstable_node(pos, nodename)
 	if minetest.registered_entities[nodename] then
@@ -35,7 +20,6 @@ local function add_unstable_node(pos, nodename)
 		local luae = obj:get_luaentity()
 		if luae then
 			obj:setvelocity({x=0, y= -luae.fallspeed, z=0})
-			monitor_fall(obj)
 			return true
 		else
 			obj:remove()
@@ -46,7 +30,6 @@ end
 
 local function entityfall(pos)
 	local node = minetest.get_node(pos)
-	minetest.debug("Falling "..minetest.pos_to_string(pos))
 
 	-- Remove node
 	minetest.remove_node(pos)
@@ -60,7 +43,6 @@ local function fallunstable(pos, limit)
 	if not limit then
 		limit = unstabledepth
 	end
-	minetest.debug("Limit: "..tostring(limit) )
 
 	if limit < 1 then
 		return false
@@ -104,6 +86,23 @@ minetest.register_on_punchnode(function(pos, node, puncher, pointed_thing)
 end)
 
 local function define_unstable_node_entity(nodename, fallspeed)
+	local tileset = minetest.registered_nodes[nodename].tiles
+	if type(tileset) == "string" then
+		tileset = {tileset}
+	end
+	local newtileset = {}
+
+	for k,v in pairs(tileset) do
+		if type(v) == "table" then
+			newtileset[k] = v.name
+		else
+			newtileset[k] = v
+		end
+	end
+
+	while #newtileset < 6 do
+		newtileset[#newtileset+1] = newtileset[#newtileset]
+	end
 
 	local def = {
 		name = nodename,
@@ -113,8 +112,22 @@ local function define_unstable_node_entity(nodename, fallspeed)
 		collisionbox = {-0.5, -0.5, -0.5, 0.5, 0.5, 0.5},
 		fallspeed = fallspeed or 10,
 		physical = true,
-		on_activate = function(self)
-			monitor_fall(self.object)
+		time = 0,
+		on_step = function(self, dtime)
+			if self.time + dtime < 0.1 then
+				self.time = self.time + dtime
+				return
+			else
+				self.time = 0
+			end
+
+			local obj = self.object
+
+			if math.abs(obj:getvelocity().y) <= 0 then
+				local pos = obj:getpos()
+				obj:remove()
+				minetest.set_node(pos, {name=self.name})
+			end
 		end
 	}
 
@@ -127,35 +140,17 @@ function unstablenodes.add_unstable_version(nodename)
 	local oldnodedef = minetest.registered_nodes[nodename]
 	if oldnodedef then
 
-		local tileset = oldnodedef.tiles
-		if type(tileset) == "string" then
-			tileset = {tileset}
-		end
-		local newtileset = {}
-
-		for k,v in pairs(tileset) do
-			if type(v) == "table" then
-				newtileset[k] = v.name
-			else
-				newtileset[k] = v
-			end
-		end
-
-		while #newtileset < 6 do
-			newtileset[#newtileset+1] = newtileset[#newtileset]
-		end
 
 		for k,v in pairs(oldnodedef) do
 			newdef[k] = v
 		
 		end
-		newdef.textures = newtileset
 		newdef.groups.unstable = 1
 		newdef.description = "Unstable "..newdef.description
 
 
 		minetest.register_node(newnodename, newdef)
-		unstablenodes.define_unstable_node_entity(newnodename)
+		define_unstable_node_entity(newnodename)
 
 		minetest.register_craft({
 			output = newnodename,
@@ -174,7 +169,7 @@ function unstablenodes.register_node(nodename, def)
 	def.groups.unstable = 1
 
 	minetest.register_node(nodename, def)
-	unstablenodes.define_unstable_node_entity(nodename)
+	define_unstable_node_entity(nodename)
 end
 
-dofile( minetest.get_modpath("unstablenodes").."/added_nodes.lua")
+dofile(minetest.get_modpath("unstablenodes").."/nodes.lua")
