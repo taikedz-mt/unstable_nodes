@@ -1,8 +1,8 @@
 unstablenodes = {}
 
-local unstabledepth = 3
-local unstablerange = 5
-local falldelay = 0.1
+local unstabledepth = 2
+local unstablerange = 2
+local falldelay = 0.2
 
 local function is_unstable(nodename)
 
@@ -82,10 +82,8 @@ local function fallunstable(pos, limit)
 			entityfall(pos)
 		end)
 		return true
-	else
-		minetest.log("error","unexpected condition on unstable ground")
 	end
-	return false
+	return fallunstable(posunder, limit - 1)
 end
 
 minetest.register_on_punchnode(function(pos, node, puncher, pointed_thing)
@@ -96,7 +94,9 @@ minetest.register_on_punchnode(function(pos, node, puncher, pointed_thing)
 			{"group:unstable"}
 		)
 		for _,thepos in pairs(unodes) do
-			fallunstable(thepos)
+			minetest.after(0.1*vector.distance(thepos, pos)/2, function()
+				fallunstable(thepos)
+			end)
 		end
 	end
 end)
