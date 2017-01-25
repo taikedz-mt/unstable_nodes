@@ -6,7 +6,6 @@ local falldelay = 0.2
 
 local function is_unstable(nodename)
 
-	minetest.debug("Checking "..nodename )
 	return (minetest.get_item_group(nodename, "unstable") > 0)
 end
 
@@ -46,7 +45,6 @@ end
 
 local function entityfall(pos)
 	local node = minetest.get_node(pos)
-	minetest.debug("Falling "..minetest.pos_to_string(pos))
 
 	-- Remove node
 	minetest.remove_node(pos)
@@ -60,7 +58,6 @@ local function fallunstable(pos, limit)
 	if not limit then
 		limit = unstabledepth
 	end
-	minetest.debug("Limit: "..tostring(limit) )
 
 	if limit < 1 then
 		return false
@@ -118,7 +115,6 @@ function unstablenodes.define_unstable_node(nodename, fallspeed)
 		end
 	end
 
-	minetest.debug(dump(newtileset))
 	while #newtileset < 6 do
 		newtileset[#newtileset+1] = newtileset[#newtileset]
 	end
